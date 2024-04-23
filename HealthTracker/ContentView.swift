@@ -6,17 +6,54 @@
 //
 
 import SwiftUI
+import SwiftData
+
 
 struct ContentView: View {
+    @Environment (\.modelContext) var modelContext
+    @State private var path = [Meds]()
+    @Query var med: [Meds]
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack(path: $path) {
+            List {
+                ForEach(med) { meds in
+                    NavigationLink(value: meds) {
+                        Text(meds.name)
+                        Text(meds.dose)
+                    }
+                    
+                }
+                .onDelete(perform: deleteMed)
+                
+               
+            }
+            .navigationTitle("Precriptions")
+            .navigationDestination(for:
+                Meds.self) {Meds in
+               EditMedsView(meds: Meds)
+                
+            }
+                .toolbar {
+                    Button("Add Medicine", systemImage: "plus", action: addMed)
+                }
+            
         }
-        .padding()
     }
+    
+    func addMed() {
+        let meds = Meds(name: "", dose: "", details: "", provider: "")
+        modelContext.insert(meds)
+        path.append(meds)
+    }
+    
+    func deleteMed(at offset: IndexSet) {
+        for offset in offset {
+            let med = med[offset]
+            modelContext.delete(med)
+        }
+    }
+    
 }
 
 #Preview {
